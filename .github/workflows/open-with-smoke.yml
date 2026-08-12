@@ -1,0 +1,35 @@
+name: open-with-smoke
+
+on:
+  push:
+    branches: [ci/open-with-smoke]
+
+jobs:
+  smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Register a markdown handler (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xdg-utils libglib2.0-bin desktop-file-utils
+          mkdir -p ~/.local/share/applications
+          cat > ~/.local/share/applications/smoke-editor.desktop <<'EOF'
+          [Desktop Entry]
+          Type=Application
+          Name=Smoke Editor
+          Exec=/bin/true %f
+          MimeType=text/markdown;
+          EOF
+          update-desktop-database ~/.local/share/applications
+          xdg-mime default smoke-editor.desktop text/markdown
+      - name: Run Open With discovery smoke test
+        run: npx --yes tsx config/scripts/open-with-smoke.ts
