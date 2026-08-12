@@ -37,32 +37,36 @@ import {
 
 async function setActivePaneForegroundAgent(
   page: Page,
-  agent: 'droid' | 'antigravity' | null
+  agent: 'droid' | 'antigravity' | null,
+  shellForeground = false
 ): Promise<string> {
-  return page.evaluate((agent) => {
-    const state = window.__store?.getState()
-    const worktreeId = state?.activeWorktreeId
-    const tabId =
-      state?.activeTabType === 'terminal'
-        ? state.activeTabId
-        : worktreeId
-          ? (state?.activeTabIdByWorktree?.[worktreeId] ?? null)
-          : null
-    const manager = tabId ? window.__paneManagers?.get(tabId) : null
-    const pane = manager?.getActivePane?.() ?? manager?.getPanes?.()[0] ?? null
-    if (!state || !tabId || !pane) {
-      throw new Error('No active terminal pane for foreground-agent setup')
-    }
-    const paneKey = `${tabId}:${pane.leafId}`
-    state.setPaneForegroundAgent(paneKey, {
-      agent,
-      shellForeground: false,
-      // The shortcut only emits CSI-u for a process identity confirmed to
-      // belong to this PTY; keep the fixture aligned with that trust gate.
-      routingTrusted: agent === 'droid'
-    })
-    return paneKey
-  }, agent)
+  return page.evaluate(
+    ({ agent, shellForeground }) => {
+      const state = window.__store?.getState()
+      const worktreeId = state?.activeWorktreeId
+      const tabId =
+        state?.activeTabType === 'terminal'
+          ? state.activeTabId
+          : worktreeId
+            ? (state?.activeTabIdByWorktree?.[worktreeId] ?? null)
+            : null
+      const manager = tabId ? window.__paneManagers?.get(tabId) : null
+      const pane = manager?.getActivePane?.() ?? manager?.getPanes?.()[0] ?? null
+      if (!state || !tabId || !pane) {
+        throw new Error('No active terminal pane for foreground-agent setup')
+      }
+      const paneKey = `${tabId}:${pane.leafId}`
+      state.setPaneForegroundAgent(paneKey, {
+        agent,
+        shellForeground,
+        // The shortcut only emits CSI-u for a process identity confirmed to
+        // belong to this PTY; keep the fixture aligned with that trust gate.
+        routingTrusted: agent === 'droid'
+      })
+      return paneKey
+    },
+    { agent, shellForeground }
+  )
 }
 
 async function dispatchCtrlCToActiveTerminalTextarea(
@@ -474,10 +478,22 @@ test.describe('Terminal Shortcuts', () => {
     await installMainProcessPtyWriteSpy(electronApp)
     const ptyId = await waitForActivePanePtyId(orcaPage)
 
-    await pressAndExpectWrite(orcaPage, electronApp, 'Shift+Enter', '\x1b\r')
     if (process.platform === 'win32') {
+      // Why: #12267 — a proven Windows shell foreground routes LF (PSReadLine's
+      // AddLine); pin the scan verdict so the expectation is deterministic.
+      const paneKey = await setActivePaneForegroundAgent(orcaPage, null, true)
+      try {
+        await pressAndExpectWrite(orcaPage, electronApp, 'Shift+Enter', '\n')
+      } finally {
+        await orcaPage.evaluate(
+          (key) => window.__store?.getState().clearPaneForegroundAgent(key),
+          paneKey
+        )
+      }
       return
     }
+
+    await pressAndExpectWrite(orcaPage, electronApp, 'Shift+Enter', '\x1b\r')
 
     // Why: exercise the production PTY-output tracker, not xterm's renderer-
     // local flag state, so the test covers the bytes the shortcut policy sees.

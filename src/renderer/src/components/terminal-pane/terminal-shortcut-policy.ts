@@ -176,10 +176,20 @@ export function resolveTerminalShortcutAction(
   ) {
     // Why: negotiated KKP is authoritative everywhere; trusted pane evidence also preserves Droid's Windows encoding without KKP.
     const windowsHost = isWindowsTerminalHost()
-    const hasTrustedWindowsCsiU = windowsHost && getWindowsShiftEnterEncoding?.() === 'csi-u'
+    const windowsShiftEnterEncoding = windowsHost ? getWindowsShiftEnterEncoding?.() : undefined
+    const hasTrustedWindowsCsiU = windowsShiftEnterEncoding === 'csi-u'
     // Why: CSI-u is application input, not universal; without trusted Windows evidence, require active KKP negotiation.
     const canSendCsiU = hasTrustedWindowsCsiU || isKittyKeyboardActivePane?.() === true
-    return { type: 'sendInput', data: canSendCsiU ? '\x1b[13;2u' : '\x1b\r' }
+    if (canSendCsiU) {
+      return { type: 'sendInput', data: '\x1b[13;2u' }
+    }
+    // Why: a proven Windows shell foreground gets LF — PSReadLine binds it to
+    // AddLine (Ctrl+J) while Esc+CR is unbound there (#12267); everything else
+    // keeps Esc+CR, the composer soft-newline agents expect.
+    return {
+      type: 'sendInput',
+      data: windowsShiftEnterEncoding === 'newline' ? '\n' : '\x1b\r'
+    }
   }
 
   if (

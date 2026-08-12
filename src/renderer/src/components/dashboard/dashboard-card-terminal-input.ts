@@ -122,7 +122,13 @@ export function resolveDashboardCardTerminalInput(
     }),
     localWindowsConpty: isLocalNativeWindowsConpty(windowsPtyContext),
     ...(args.osRelease === undefined ? {} : { osRelease: args.osRelease }),
-    windowsShiftEnterEncoding: resolveWindowsShiftEnterEncodingForPane(state, args.paneKey),
+    // Why: 'newline' is not on the dashboard wire — old clients hard-drop any
+    // card whose terminalInput fails validation, so publish the legacy
+    // fallback until the value can be capability-negotiated.
+    windowsShiftEnterEncoding:
+      resolveWindowsShiftEnterEncodingForPane(state, args.paneKey) === 'csi-u'
+        ? 'csi-u'
+        : 'alt-enter',
     ctrlEnterCsiU: hasCtrlEnterCsiUAuthorityForPane(state, args.paneKey),
     kittyKeyboardAdvertised: !shouldDisableKittyKeyboardForTerminal({
       ...windowsPtyContext,

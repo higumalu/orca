@@ -7269,7 +7269,7 @@ describe('connectPanePty', () => {
       agent: null,
       shellForeground: true
     })
-    expect(resolveMockPaneWindowsShiftEnterEncoding(mockStoreState, paneKey)).toBe('alt-enter')
+    expect(resolveMockPaneWindowsShiftEnterEncoding(mockStoreState, paneKey)).toBe('newline')
   })
 
   it('trusts Pi in a no-OSC shell and retires routing after accepted exit input', async () => {
@@ -7537,7 +7537,7 @@ describe('connectPanePty', () => {
       agent: null,
       shellForeground: true
     })
-    expect(resolveMockPaneWindowsShiftEnterEncoding(mockStoreState, paneKey)).toBe('alt-enter')
+    expect(resolveMockPaneWindowsShiftEnterEncoding(mockStoreState, paneKey)).toBe('newline')
   })
 
   it('disarms stale TUI modes in the emulator after a confirmed return to shell', async () => {
@@ -7700,7 +7700,7 @@ describe('connectPanePty', () => {
     await vi.advanceTimersByTimeAsync(350 + 1200 + 6000)
 
     expect(mockStoreState.clearAgentLaunchConfig).toHaveBeenCalledExactlyOnceWith(paneKey)
-    expect(resolveMockPaneWindowsShiftEnterEncoding(mockStoreState, paneKey)).toBe('alt-enter')
+    expect(resolveMockPaneWindowsShiftEnterEncoding(mockStoreState, paneKey)).toBe('newline')
   })
 
   it('pins interrupt inference before acknowledged input and command exit cleanup', async () => {
@@ -24337,7 +24337,7 @@ describe('connectPanePty', () => {
         agent: null,
         shellForeground: true
       })
-      expect(resolveMockPaneWindowsShiftEnterEncoding(mockStoreState, cacheKey)).toBe('alt-enter')
+      expect(resolveMockPaneWindowsShiftEnterEncoding(mockStoreState, cacheKey)).toBe('newline')
     })
 
     it('fails closed when a warm reattach has no persisted launch identity', async () => {

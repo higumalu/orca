@@ -1,8 +1,77 @@
 import { describe, expect, it } from 'vitest'
+import { resolveTerminalShortcutAction } from './terminal-shortcut-policy'
 import {
   resolveWindowsShiftEnterEncoding,
   resolveWindowsShiftEnterEncodingForPane
 } from './terminal-windows-shift-enter'
+
+describe('Shift+Enter bytes for the resolved Windows encoding', () => {
+  const shiftEnter = {
+    key: 'Enter',
+    code: 'Enter',
+    metaKey: false,
+    ctrlKey: false,
+    altKey: false,
+    shiftKey: true,
+    repeat: false
+  }
+
+  it('sends LF for a proven Windows shell foreground (#12267)', () => {
+    // PSReadLine binds LF (Ctrl+J) to AddLine; Esc+CR is unbound in plain shells.
+    expect(
+      resolveTerminalShortcutAction(
+        shiftEnter,
+        false,
+        'false',
+        0,
+        true,
+        undefined,
+        undefined,
+        () => false,
+        undefined,
+        () => 'newline',
+        () => true
+      )
+    ).toEqual({ type: 'sendInput', data: '\n' })
+  })
+
+  it('lets active KKP outrank the shell heuristic', () => {
+    expect(
+      resolveTerminalShortcutAction(
+        shiftEnter,
+        false,
+        'false',
+        0,
+        true,
+        undefined,
+        undefined,
+        () => true,
+        undefined,
+        () => 'newline',
+        () => true
+      )
+    ).toEqual({ type: 'sendInput', data: '\x1b[13;2u' })
+  })
+
+  it('keeps Esc+CR on non-Windows hosts even for shells', () => {
+    // Why: zsh binds M-Return to self-insert-unmeta, so Esc+CR already newlines there.
+    expect(
+      resolveTerminalShortcutAction(
+        shiftEnter,
+        false,
+        'false',
+        0,
+        false,
+        undefined,
+        undefined,
+        () => false,
+        undefined,
+        () => 'newline',
+        () => false
+      )
+    ).toEqual({ type: 'sendInput', data: '\x1b\r' })
+  })
+})
 
 describe('resolveWindowsShiftEnterEncoding', () => {
   it('uses CSI-u only for trusted Droid process evidence', () => {
@@ -54,6 +123,8 @@ describe('resolveWindowsShiftEnterEncoding', () => {
     }
 
     expect(resolveWindowsShiftEnterEncodingForPane(state, 'tab:pane', 'Pi ready')).toBe('alt-enter')
+    // Why: a proven shell foreground routes LF (#12267) even when a stale
+    // title still names an agent.
     expect(
       resolveWindowsShiftEnterEncodingForPane(
         {
@@ -65,7 +136,7 @@ describe('resolveWindowsShiftEnterEncoding', () => {
         'tab:pane',
         'Pi ready'
       )
-    ).toBe('alt-enter')
+    ).toBe('newline')
   })
 
   it('does not let a stale title undo explicit routing revocation', () => {
@@ -164,6 +235,6 @@ describe('resolveWindowsShiftEnterEncoding', () => {
         foreground: { agent: null, shellForeground: true },
         launchAgentType: 'droid'
       })
-    ).toBe('alt-enter')
+    ).toBe('newline')
   })
 })

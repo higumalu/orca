@@ -52,7 +52,9 @@ const DASHBOARD_HOST_PLATFORMS = new Set([
   'sunos',
   'win32'
 ])
-const WINDOWS_SHIFT_ENTER_ENCODINGS = new Set(['alt-enter', 'csi-u'])
+// Why: 'newline' is tolerated for forward compatibility — hosts publish only
+// the legacy values today, but rejecting it would hard-drop the whole card.
+const WINDOWS_SHIFT_ENTER_ENCODINGS = new Set(['alt-enter', 'csi-u', 'newline'])
 
 function isBoundedString(value: unknown, maxLength: number, allowEmpty = false): value is string {
   return typeof value === 'string' && value.length <= maxLength && (allowEmpty || value.length > 0)

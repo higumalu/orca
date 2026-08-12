@@ -3,7 +3,7 @@ import { TUI_AGENT_CONFIG } from '../../../../shared/tui-agent-config'
 import { resolveCommittedTitleAgentType } from '../../lib/pane-agent-evidence'
 import type { PaneForegroundAgentEntry } from '@/store/slices/pane-foreground-agent'
 
-export type WindowsShiftEnterEncoding = 'alt-enter' | 'csi-u'
+export type WindowsShiftEnterEncoding = 'alt-enter' | 'csi-u' | 'newline'
 
 type WindowsShiftEnterAgentSignals = {
   foreground?: PaneForegroundAgentEntry
@@ -21,7 +21,10 @@ export function resolveWindowsShiftEnterEncoding(
   signals: WindowsShiftEnterAgentSignals
 ): WindowsShiftEnterEncoding {
   if (signals.foreground?.shellForeground) {
-    return 'alt-enter'
+    // Why: PSReadLine binds LF (Ctrl+J) to AddLine but has no Esc+CR binding, so
+    // a proven shell foreground gets the newline Shift+Enter advertises (#12267).
+    // Agents keep Esc+CR — their composers bind it as the soft-newline chord.
+    return 'newline'
   }
   // Why: an entry marks a newer command/process generation. Until fresh
   // confirmation trusts it, stale launch ownership must not route input.
