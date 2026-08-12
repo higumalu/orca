@@ -11999,6 +11999,15 @@
             "e3ee2daa32": "Stack #{{value0}}",
             "cb440931b7": "{{value0}} of {{value1}} · {{value2}}",
             "525259fa17": "Stack details are temporarily unavailable."
+          },
+          "FileExplorerOpenWithSubmenu": {
+            "openFailed": "Could not open the file with the selected application.",
+            "openWith": "Open With",
+            "loading": "Looking for applications...",
+            "unavailable": "Applications are unavailable for this file.",
+            "noApplications": "No applications found",
+            "defaultBadge": "Default",
+            "chooseAnotherApp": "Choose another app..."
           }
         }
       },
