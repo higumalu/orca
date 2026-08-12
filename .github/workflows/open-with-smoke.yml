@@ -32,4 +32,4 @@ jobs:
           update-desktop-database ~/.local/share/applications
           xdg-mime default smoke-editor.desktop text/markdown
       - name: Run Open With discovery smoke test
-        run: npx --yes tsx config/scripts/open-with-smoke.ts
+        run: npx --yes tsx config/scripts/open-with-smoke.mts
