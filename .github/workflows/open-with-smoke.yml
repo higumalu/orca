@@ -27,9 +27,11 @@ jobs:
           Type=Application
           Name=Smoke Editor
           Exec=/bin/true %f
-          MimeType=text/markdown;
+          MimeType=text/markdown;text/plain;
           EOF
           update-desktop-database ~/.local/share/applications
-          xdg-mime default smoke-editor.desktop text/markdown
+          # Why: shared-mime-info on the runner maps .md to text/plain, so
+          # register the handler for both candidates the file may resolve to.
+          xdg-mime default smoke-editor.desktop text/markdown text/plain
       - name: Run Open With discovery smoke test
         run: npx --yes tsx config/scripts/open-with-smoke.mts
