@@ -32,15 +32,21 @@ function BaseRefButton({
     { value0: displayLabel }
   )
   return (
-    <button
-      type="button"
-      className="min-w-0 max-w-full truncate rounded-sm border-0 bg-transparent p-0 text-left font-mono text-[10.5px] font-medium text-foreground/90 underline decoration-border underline-offset-2 hover:text-foreground hover:decoration-foreground"
-      onClick={onClick}
-      title={`${title} (${baseRef})`}
-      aria-label={accessibleName}
-    >
-      {displayLabel}
-    </button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          className="min-w-0 max-w-full truncate rounded-sm border-0 bg-transparent p-0 text-left font-mono text-[10.5px] font-medium text-foreground/90 underline decoration-border underline-offset-2 hover:text-foreground hover:decoration-foreground"
+          onClick={onClick}
+          aria-label={accessibleName}
+        >
+          {displayLabel}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom" sideOffset={6} className="max-w-72">
+        {`${title} (${baseRef})`}
+      </TooltipContent>
+    </Tooltip>
   )
 }
 

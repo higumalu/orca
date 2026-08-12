@@ -91,7 +91,6 @@ function CreatePrHeaderButton({
             disabled={action.disabled}
             onClick={onClick}
             className="h-6 shrink-0 px-2 text-[11px]"
-            title={action.title}
           >
             {isCreatePrIntentInFlight || isCreatingPr ? (
               <Loader2 className="size-3.5 animate-spin" />
@@ -219,23 +218,29 @@ export function SourceControlHeaderToolbar({
               // Why: keep filter/overflow pinned right without stretching Create PR.
               <span className="min-w-0 flex-1" aria-hidden="true" />
             ) : null}
-            <button
-              type="button"
-              data-testid="source-control-filter-toggle"
-              className={cn(
-                'relative inline-flex size-7 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground',
-                normalizedFilter && 'bg-muted text-foreground'
-              )}
-              onClick={expandFilter}
-              aria-label={filterToggleTitle}
-              title={filterToggleTitle}
-              aria-expanded={false}
-            >
-              <Search className="size-3.5" />
-              {normalizedFilter ? (
-                <span className="absolute right-1 top-1 size-1.5 rounded-full bg-foreground" />
-              ) : null}
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  data-testid="source-control-filter-toggle"
+                  className={cn(
+                    'relative inline-flex size-7 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground',
+                    normalizedFilter && 'bg-muted text-foreground'
+                  )}
+                  onClick={expandFilter}
+                  aria-label={filterToggleTitle}
+                  aria-expanded={false}
+                >
+                  <Search className="size-3.5" />
+                  {normalizedFilter ? (
+                    <span className="absolute right-1 top-1 size-1.5 rounded-full bg-foreground" />
+                  ) : null}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" sideOffset={6}>
+                {filterToggleTitle}
+              </TooltipContent>
+            </Tooltip>
             {renderOverflowMenu(overflowProps)}
           </>
         ) : (
