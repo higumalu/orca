@@ -14,7 +14,7 @@ import { resolveGroupTabFromVisibleId } from '@/components/tab-group/tab-group-v
 import TerminalPane, { type TerminalPaneHandle } from '@/components/terminal-pane/TerminalPane'
 import { shouldDeferParkedPtyExitTabClose } from '@/components/terminal-pane/terminal-parked-tab-watchers'
 import { useTerminalTabColdParking } from '@/components/terminal-pane/use-terminal-tab-cold-parking'
-import { isTerminalPaneCloseChord } from '@/components/terminal-pane/terminal-shortcut-policy'
+import { isTerminalPaneCloseChord } from '@/components/terminal-pane/terminal-pane-close-chord'
 import { isTerminalImeInputContextRefreshing } from '@/components/terminal-pane/terminal-ime-input-context-refresh'
 import { Button } from '@/components/ui/button'
 import { useMountedRef } from '@/hooks/useMountedRef'

@@ -180,6 +180,25 @@ describe('resolvePreviewShortcutAction', () => {
     ).toBeNull()
   })
 
+  // Why: #13015 — with default bindings, terminal-first must let Ctrl+W reach
+  // the shell instead of closing the pane; orca-first keeps the pane close.
+  it('yields the default Ctrl+W pane-close chord to the shell under terminal-first', () => {
+    const chord = (): KeyboardEvent => keydown({ key: 'w', code: 'KeyW', ctrlKey: true })
+    expect(
+      resolvePreviewShortcutAction(
+        chord(),
+        contextFor({
+          clientPlatform: 'win32',
+          terminalInput: null,
+          terminalShortcutPolicy: 'terminal-first'
+        })
+      )
+    ).toBeNull()
+    expect(resolvePreviewShortcutAction(chord(), contextFor({ clientPlatform: 'win32' }))).toEqual({
+      type: 'closeActivePane'
+    })
+  })
+
   it('leaves ordinary typing to xterm', () => {
     expect(
       resolvePreviewShortcutAction(keydown({ key: 'a', code: 'KeyA' }), contextFor())
